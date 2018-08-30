@@ -9,19 +9,28 @@
 
 
 int sort_array(int c,char tosort[c][256]){
-	char sorted[c][256];
-	printf("\n\nchhiryo\n");
+	char sorted[c][256]; char temp[256];
 	for(int i=0; i<c; i++)
 	{
 		//printf("%d: %s\n",i,tosort[i]);
 		strcpy(sorted[i],tosort[i]);
 	}
 
-	printf("mathi wala Sorted Directories:\n");
-	int i=0;
-	for(int i=0; i<c; i++)
+	for(int i=0; i<c-1; i++){
+		for(int j=i+1; j<c; j++){
+			if(strcmp(sorted[i],sorted[j])>0)
+			{
+				strcpy(temp, sorted[i]);
+                strcpy(sorted[i], sorted[j]);
+                strcpy(sorted[j], temp);
+			}
+		}
+	}
+
+	printf("\t(%d Directory: %s)\n",0,sorted[0]);
+	for(int i=1; i<c; i++)
 	{
-		printf("%d: %s\n",i,sorted[i]);
+		printf("\t\t\t(%d Directory: %s)\n",i,sorted[i]);
 	}
 	return 0;
 }
@@ -37,6 +46,7 @@ int main(void)
 
 	while (1)
 	{
+		getchar();
 		t = time(NULL);
 		printf("\nCurrent Time: %s\n", ctime(&t));
 
@@ -77,7 +87,7 @@ int main(void)
 		
 		c = getchar();
 		if(c=='\n'){c = getchar();}
-		//getchar();
+		getchar();
 		switch (c)
 		{
 		case 'q':
@@ -101,7 +111,6 @@ int main(void)
 			break;
 		case 's':
 			printf("Sorted Directories:");
-			printf("\nDirectories: ");
 			d = opendir(".");
 			c = 0;
 			de = readdir(d);
@@ -115,7 +124,7 @@ int main(void)
 					
 			}
 			closedir(d);
-
+			
 			char tosort[c][256];
 			d = opendir(".");
 			c = 0;
@@ -123,7 +132,7 @@ int main(void)
 			if ((de->d_type) & DT_DIR)
 			{
 				strcpy(tosort[c],de->d_name);
-				printf("\t(%d Directory: %s)\n", c++, tosort[c-1]);
+				c++;
 			}
 				
 			while ((de = readdir(d)))
@@ -131,7 +140,7 @@ int main(void)
 				if ((de->d_type) & DT_DIR)
 				{
 					strcpy(tosort[c],de->d_name);
-					printf("\t\t(%d Directory: %s)\n", c++, tosort[c-1]);
+					c++;
 				}
 					
 			}
