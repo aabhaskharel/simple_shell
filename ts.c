@@ -51,7 +51,7 @@ int main(void)
 	time_t t;
 
 	initscr();
-	WINDOW *win = newwin(50, 150, 1, 1); //create window
+	WINDOW *win = newwin(40, 150, 1, 1); //create window
 
 	while (1)
 	{
@@ -84,7 +84,7 @@ int main(void)
 			{
 				if (stat(de->d_name, &statbuffer) == -1)
         			continue;
-				mvwprintw(win, y++, x, "(%d File: %s)\n", c++, de->d_name);
+				mvwprintw(win, y++, x, "(%d File: %s)", c++, de->d_name);
 				mvwprintw(win,y-1,50,"%d bytes", (intmax_t)statbuffer.st_size);
 			}
 			/*if ((c % 8) == 0)
@@ -98,10 +98,7 @@ int main(void)
 		mvwprintw(win, y++, 1, "Directories: ");
 		d = opendir(".");
 		c = 0;
-		de = readdir(d);
-
-		if ((de->d_type) & DT_DIR)
-			mvwprintw(win, y++, x, "(%d Directory: %s)\n", c++, de->d_name);
+		
 		while ((de = readdir(d)))
 		{
 			if ((de->d_type) & DT_DIR)
@@ -122,8 +119,8 @@ int main(void)
 		mvwprintw(win, y++, x, "C Change Directory");
 		mvwprintw(win, y++, x, "S Sort Directory");
 		mvwprintw(win, y++, x, "M Move Directory");
-		mvwprintw(win, y++, x, "R Remove Directory");
-		mvwprintw(win, y++, x, "Q Quit\n");
+		mvwprintw(win, y++, x, "D Remove Directory");
+		mvwprintw(win, y++, x, "Q Quit");
 
 		refresh();
 		wrefresh(win);
@@ -135,10 +132,12 @@ int main(void)
 		switch (z)
 		{
 		case 'q':
+		case 'Q':
 			endwin();
 			system("clear");
 			exit(0);
 		case 'e':
+		case 'E':
 			mvwprintw(win, y++, x, "Edit what?:");
 			scanf("%s", s);
 			strcpy(cmd, "pico ");
@@ -146,14 +145,22 @@ int main(void)
 			system(cmd);
 			break;
 		case 'r':
+		case 'R':
 			mvwprintw(win, y++, x, "Run what?:");
 			scanf("%s", cmd);
 			system(cmd);
 			break;
 		case 'c':
+		case 'C':
 			mvwprintw(win, y++, x, "Change To?:");
 			wgetstr(win, cmd);
 			chdir(cmd);
+			break;
+		case 'd':
+		case 'D':
+			mvwprintw(win, y++, x, "Remove which?:");
+			wgetstr(win,cmd);
+			rmdir(cmd);
 			break;
 		case 's':
 			mvwprintw(win, y++, x, "Sorted Directories:");
@@ -170,26 +177,26 @@ int main(void)
 			}
 			closedir(d);
 
-			char tosort[c][256];
+			int tosort[c];
 			d = opendir(".");
 			c = 0;
 			de = readdir(d);
-			if ((de->d_type) & DT_DIR)
+			if (((de->d_type) & DT_DIR) & (stat(de->d_name, &statbuffer) == -1))
 			{
-				strcpy(tosort[c], de->d_name);
+				tosort[c] = (intmax_t)statbuffer.st_size;
 				c++;
 			}
 
 			while ((de = readdir(d)))
 			{
-				if ((de->d_type) & DT_DIR)
+				if (((de->d_type) & DT_DIR) & (stat(de->d_name, &statbuffer) == -1))
 				{
-					strcpy(tosort[c], de->d_name);
+					tosort[c] = (intmax_t)statbuffer.st_size;
 					c++;
 				}
 			}
 			closedir(d);
-			sort_array(c, tosort);
+			//sort_array(c, tosort);
 			break;
 		}
 	}
