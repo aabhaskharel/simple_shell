@@ -66,8 +66,8 @@ int main(void)
 	struct stat statbuffer;			  //stat buffer to return file attributes
 	int i = 0, c;
 	int dcount, fcount; //counter to manage current directory || file list view
-	char s[356];
-	char cmd[256];
+	char s[1024];
+	char cmd[1024];
 	char from[1024];   //char array to handle move directory feature
 	char to[1024];	 //char array to handle move directory feature
 	char sortby = 'x'; //char to manage sorting options
@@ -96,9 +96,9 @@ int main(void)
 		t = time(NULL);
 		mvwprintw(win, 4, 1, "Current System Time: %s", ctime(&t)); //display current system time
 		getcwd(s, 200);
-		mvwprintw(win, 5, 1, "Current Working Directory: %s", s); //displasy current working directory
+		mvwprintw(win, 5, 1, "Current Working Directory: %s", s); //display current working directory
 
-		//count directory listing
+		//count total number of directories
 		dsize = 0;
 		d = opendir(".");
 		while ((de = readdir(d)))
@@ -111,7 +111,7 @@ int main(void)
 		}
 		closedir(d);
 
-		//count files listing
+		//count total numvber of files
 		fsize = 0;
 		d = opendir(".");
 		while ((de = readdir(d)))
@@ -136,7 +136,7 @@ int main(void)
 			sort_date(files, fsize);
 		}
 
-		int y = 8, x = 5;
+		int y = 8, x = 5; //initializing the x and y co-ordinates
 		//display all files
 		mvwprintw(win, y++, 1, "Files: ");
 		d = opendir(".");
@@ -149,10 +149,10 @@ int main(void)
 
 			stat(files[i]->d_name, &statbuffer);
 
-			mvwprintw(win, y++, x, "(%d File: %s)", i, files[i]->d_name);
-			mvwprintw(win, y - 1, 50, "%d bytes", (intmax_t)statbuffer.st_size);
+			mvwprintw(win, y++, x, "(%d File: %s)", i, files[i]->d_name);		 //listing file names
+			mvwprintw(win, y - 1, 50, "%d bytes", (intmax_t)statbuffer.st_size); //listing file size
 			t = statbuffer.st_mtime;
-			mvwprintw(win, y - 1, 65, "%s", ctime(&t));
+			mvwprintw(win, y - 1, 65, "%s", ctime(&t)); //listing file's last modified date
 		}
 		if (i == 5)
 			mvwprintw(win, y++, x, "l - NEXT");
@@ -176,10 +176,10 @@ int main(void)
 
 			stat(directories[i]->d_name, &statbuffer);
 
-			mvwprintw(win, y++, x, "(%d Directory: %s)", i, directories[i]->d_name);
-			mvwprintw(win, y - 1, 50, "%d bytes", (intmax_t)statbuffer.st_size);
+			mvwprintw(win, y++, x, "(%d Directory: %s)", i, directories[i]->d_name); //listing directory names
+			mvwprintw(win, y - 1, 50, "%d bytes", (intmax_t)statbuffer.st_size);	 //listing directory size
 			t = statbuffer.st_mtime;
-			mvwprintw(win, y - 1, 65, "%s", ctime(&t));
+			mvwprintw(win, y - 1, 65, "%s", ctime(&t)); //listing directory's last modified date
 		}
 		if (i == 5)
 			mvwprintw(win, y++, x, "n - NEXT");
@@ -192,22 +192,22 @@ int main(void)
 
 		y += 2;
 		mvwprintw(win, y++, 1, "Operations:");
-		mvwprintw(win, y++, x, "D Display");
+		mvwprintw(win, y++, x, "V Display");
 		mvwprintw(win, y++, x, "E Edit");
 		mvwprintw(win, y++, x, "R RUN");
 		mvwprintw(win, y++, x, "C Change Directory");
 		mvwprintw(win, y++, x, "S Sort Directory");
 		mvwprintw(win, y++, x, "M Move Directory");
-		mvwprintw(win, y++, x, "X Remove Directory");
+		mvwprintw(win, y++, x, "D Remove Directory");
 		mvwprintw(win, y++, x, "Q Quit");
 
 		refresh();
-		wrefresh(win);
+		wrefresh(win); //refreshing window to display new updates on window
 		y += 2;
 		x = 2;
-		wmove(win, y, x);
+		wmove(win, y, x); //changing x,y co-ordinates in window
 		char z;
-		wgetnstr(win, &z, 1);
+		wgetnstr(win, &z, 1); //get a character to operate corresponding functionm
 		x = 2;
 		switch (z)
 		{
@@ -258,16 +258,23 @@ int main(void)
 			fcount = 0;
 			chdir(cmd);
 			break;
-		case 'x':
-		case 'X':
-			mvwprintw(win, y++, x, "Remove which?:");
-			wgetstr(win, cmd);
-			rmdir(cmd);
-			break;
 		case 'd':
 		case 'D':
-			mvwprintw(win, y++, x, "Display which?:");
+			mvwprintw(win, y++, x, "Remove which?:");
 			wgetstr(win, cmd);
+			rmdir(cmd); 
+			break;
+		case 'v':
+		case 'V':
+			mvwprintw(win, y++, x, "Display which?:");
+			wgetstr(win, s);
+			system("clear");
+			strcpy(cmd, "cat ");
+			strcat(cmd, s);
+			system(cmd);
+			getch();
+			system("clear");
+			break;
 		case 'm':
 		case 'M':
 			mvwprintw(win, y++, x, "Move which?:");
@@ -278,12 +285,17 @@ int main(void)
 			strcat(cmd, from);
 			strcat(cmd, " ");
 			strcat(cmd, to);
+			system("clear");
 			system(cmd);
 			break;
 		case 's':
 		case 'S':
 			mvwprintw(win, y++, x, "Sort by? s - size || d - date || other - default:");
 			wgetnstr(win, &sortby, 1);
+			break;
+		default:
+			mvwprintw(win, y++, x, "Invalid choice!");
+			wgetstr(win, cmd);
 			break;
 		}
 	}
